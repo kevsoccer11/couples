@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>THRESHOLD: Couples Exploration & Relationship Game</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@lucide/web@latest"></script>
+
+  <style>
+    :root {
+      --bg-dark: #08080a;
+      --card-bg: #121216;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f3f3f6;
+      --text-muted: #8e8e9f;
+      --accent-sexuality: #e63946;
+      --accent-sexuality-glow: rgba(230, 57, 70, 0.15);
+      --accent-life: #2a9d8f;
+      --accent-life-glow: rgba(42, 157, 143, 0.15);
+      --current-accent: var(--accent-sexuality);
+      --current-glow: var(--accent-sexuality-glow);
+      --radius-lg: 24px;
+      --radius-md: 14px;
+      --radius-sm: 8px;
+      --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .ambient-bg {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 350px;
+      height: 350px;
+      background: var(--current-glow);
+      filter: blur(100px);
+      border-radius: 50%;
+      z-index: 0;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    header {
+      width: 100%;
+      max-width: 480px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .app-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text-main);
+      text-transform: uppercase;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .module-nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      padding: 4px;
+      border-radius: var(--radius-md);
+    }
+
+    .module-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .module-tab.active[data-module="sexuality"] {
+      background: var(--accent-sexuality);
+      color: #fff;
+    }
+
+    .module-tab.active[data-module="life"] {
+      background: var(--accent-life);
+      color: #fff;
+    }
+
+    .intensity-bar {
+      display: flex;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      padding: 3px;
+      border-radius: var(--radius-sm);
+      gap: 4px;
+      transition: var(--transition);
+      opacity: 1;
+      max-height: 50px;
+    }
+
+    .intensity-bar.hidden {
+      opacity: 0;
+      max-height: 0;
+      padding: 0;
+      border: none;
+      pointer-events: none;
+      overflow: hidden;
+      margin: 0;
+    }
+
+    .intensity-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .intensity-btn.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+    }
+
+    .shuffle-all-btn {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px dashed var(--card-border);
+      color: var(--text-main);
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .shuffle-all-btn:active {
+      background: rgba(255, 255, 255, 0.08);
+      transform: scale(0.98);
+    }
+
+    main {
+      width: 100%;
+      max-width: 480px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 16px 0;
+      z-index: 10;
+    }
+
+    .card-container {
+      width: 100%;
+      min-height: 360px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .card-container:active {
+      transform: scale(0.985);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--current-accent);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .card-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .card-action-btn.active {
+      color: #e63946;
+    }
+
+    .card-body {
+      margin: 20px 0;
+    }
+
+    .card-prompt {
+      font-size: 1.25rem;
+      font-weight: 600;
+      line-height: 1.5;
+      color: var(--text-main);
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 16px;
+    }
+
+    .tap-hint {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.6;
+    }
+
+    .response-section {
+      width: 100%;
+      max-width: 480px;
+      z-index: 10;
+    }
+
+    .response-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .response-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 12px 8px;
+      border-radius: var(--radius-md);
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .response-btn:active {
+      transform: scale(0.95);
+    }
+
+    .response-btn.green { border-color: rgba(46, 196, 182, 0.4); color: #2ec4b6; }
+    .response-btn.yellow { border-color: rgba(255, 159, 28, 0.4); color: #ff9f1c; }
+    .response-btn.red { border-color: rgba(230, 57, 70, 0.4); color: #e63946; }
+
+    .poll-options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .poll-option-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      text-align: left;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .poll-option-btn.selected {
+      background: var(--current-glow);
+      border-color: var(--current-accent);
+    }
+
+    .drawer {
+      position: fixed;
+      bottom: -100%;
+      left: 0;
+      width: 100%;
+      height: 85vh;
+      background: #0f0f13;
+      border-top: 1px solid var(--card-border);
+      border-radius: 28px 28px 0 0;
+      z-index: 100;
+      padding: 24px;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 -20px 50px rgba(0,0,0,0.8);
+    }
+
+    .drawer.open {
+      transform: translateY(-100%);
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .drawer-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .drawer-content {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    .overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .log-item, .fav-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-bg" id="ambientBg"></div>
+
+  <header>
+    <div class="top-bar">
+      <div class="app-title">Threshold</div>
+      <div class="header-actions">
+        <button class="icon-btn" id="favsDrawerBtn" title="Favorites"><i data-lucide="bookmark"></i></button>
+        <button class="icon-btn" id="logsDrawerBtn" title="Boundary History Log"><i data-lucide="shield-check"></i></button>
+        <button class="icon-btn" id="toolsDrawerBtn" title="Tools & Export"><i data-lucide="sliders"></i></button>
+      </div>
+    </div>
+
+    <div class="module-nav">
+      <button class="module-tab active" data-module="sexuality">
+        <i data-lucide="flame"></i> Sexuality & Intimacy
+      </button>
+      <button class="module-tab" data-module="life">
+        <i data-lucide="compass"></i> Life & Connection
+      </button>
+    </div>
+
+    <div class="intensity-bar" id="intensityBar">
+      <button class="intensity-btn active" data-level="all">All Levels</button>
+      <button class="intensity-btn" data-level="1">Mild (Lvl 1)</button>
+      <button class="intensity-btn" data-level="2">Moderate (Lvl 2)</button>
+      <button class="intensity-btn" data-level="3">Wild (Lvl 3)</button>
+    </div>
+
+    <button class="shuffle-all-btn" id="shuffleAllBtn">
+      <i data-lucide="shuffle"></i> Shuffle Across All Categories
+    </button>
+  </header>
+
+  <main>
+    <div class="card-container" id="cardContainer">
+      <div class="card-header">
+        <span class="card-badge" id="cardCategory">Loading Deck...</span>
+        <div class="card-actions">
+          <button class="card-action-btn" id="favCardBtn"><i data-lucide="bookmark"></i></button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <p class="card-prompt" id="cardPrompt">Preparing questions...</p>
+        <div class="poll-options-grid hidden" id="pollOptionsGrid"></div>
+      </div>
+
+      <div class="card-footer">
+        <span id="deckCounter">Card 0 of 0</span>
+        <span class="tap-hint"><i data-lucide="touch-portal"></i> Tap card to flip</span>
+      </div>
+    </div>
+  </main>
+
+  <div class="response-section">
+    <div class="response-bar" id="responseBar"></div>
+  </div>
+
+  <div class="overlay" id="drawerOverlay"></div>
+
+  <div class="drawer" id="toolsDrawer">
+    <div class="drawer-header">
+      <h3 class="drawer-title" id="drawerTitle">Tools & Options</h3>
+      <button class="icon-btn" id="closeDrawerBtn"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer-content" id="drawerContent"></div>
+  </div>
+
+  <script>
+    let masterDatabase = [
+      { id: 'sec-101', module: 'sexuality', category: 'Past History', intensity: 1, prompt: 'What was a romantic or sensual moment from early in our relationship that made your heart race?', contextType: 'story' },
+      { id: 'sec-102', module: 'sexuality', category: 'Past History', intensity: 2, prompt: 'What was a barrier or insecurity you had to overcome in your intimacy journey?', contextType: 'story' },
+      { id: 'sec-103', module: 'sexuality', category: 'Touch Play', intensity: 2, prompt: 'Is there a specific touch technique or massage style you would love to experience more often?', contextType: 'consent' },
+      { id: 'sec-104', module: 'sexuality', category: 'Fantasies', intensity: 3, prompt: 'Have you ever wanted to try blindfolds, sensory deprivation, or light restraints?', contextType: 'consent' },
+      { id: 'sec-105', module: 'sexuality', category: 'Spicy Dares', intensity: 2, prompt: 'Whisper a genuine fantasy or sensual secret directly into your partner\'s ear right now.', contextType: 'action' },
+      { id: 'sec-106', module: 'sexuality', category: 'Spicy Dares', intensity: 3, prompt: 'Give your partner a slow 60-second back massage right now.', contextType: 'action' },
+      { id: 'life-201', module: 'life', category: 'Life & Core Values', intensity: 1, prompt: 'What is one core belief or value that you will never compromise on?', contextType: 'alignment' },
+      { id: 'life-202', module: 'life', category: 'Finances & Money', intensity: 2, prompt: 'How should we handle major financial purchases or joint investments moving forward?', contextType: 'alignment' },
+      { id: 'life-203', module: 'life', category: 'Pets & Animals', intensity: 1, prompt: 'What role do pets play in your ideal household and daily routine?', contextType: 'poll', options: ['Crucial part of family', 'Nice to have occasionally', 'Prefer no pets', 'Undecided'] },
+      { id: 'life-204', module: 'life', category: 'Sports & Athletics', intensity: 1, prompt: 'What is an athletic activity or workout routine you would love for us to do together?', contextType: 'story' },
+      { id: 'life-205', module: 'life', category: 'Travel & Dream Home', intensity: 1, prompt: 'If we could move anywhere in the world for one year, where would we go?', contextType: 'story' }
+    ];
+
+    let unspentDeck = [];
+    let currentCard = null;
+    let activeModule = 'sexuality';
+    let activeIntensity = 'all';
+    let favoriteIds = JSON.parse(localStorage.getItem('threshold_favs') || '[]');
+    let boundaryLogs = JSON.parse(localStorage.getItem('threshold_logs') || '[]');
+
+    const CONTEXT_RULES = {
+      consent: [
+        { label: 'Yes / Into It', class: 'green', status: 'Approved' },
+        { label: 'Maybe / Discuss', class: 'yellow', status: 'Needs Discussion' },
+        { label: 'Hard Pass', class: 'red', status: 'Boundary Set' }
+      ],
+      action: [
+        { label: 'Doing It Now! 🔥', class: 'green', status: 'Accepted' },
+        { label: 'Negotiate / Modify', class: 'yellow', status: 'Modified' },
+        { label: 'Pass / Swap', class: 'red', status: 'Passed' }
+      ],
+      alignment: [
+        { label: '100% Agree', class: 'green', status: 'Aligned' },
+        { label: 'Compromise', class: 'yellow', status: 'Discussing' },
+        { label: 'Disagree', class: 'red', status: 'Differing View' }
+      ],
+      story: [
+        { label: 'Love Sharing 💬', class: 'green', status: 'Shared Story' },
+        { label: 'Ask Follow-up ❓', class: 'yellow', status: 'Follow-up Asked' },
+        { label: 'Skip Topic ⏭️', class: 'red', status: 'Skipped' }
+      ]
+    };
+
+    function initDatabase() {
+      rebuildUnspentDeck();
+      drawNextCard();
+    }
+
+    function rebuildUnspentDeck() {
+      let filtered = masterDatabase.filter(card => {
+        const matchesModule = activeModule === 'all' || card.module === activeModule;
+        const matchesIntensity = activeModule !== 'sexuality' || activeIntensity === 'all' || card.intensity == activeIntensity;
+        return matchesModule && matchesIntensity;
+      });
+
+      for (let i = filtered.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+      }
+      unspentDeck = filtered;
+    }
+
+    function drawNextCard() {
+      if (unspentDeck.length === 0) rebuildUnspentDeck();
+      if (unspentDeck.length === 0) {
+        document.getElementById('cardPrompt').innerText = 'No cards found matching this filter.';
+        return;
+      }
+      currentCard = unspentDeck.pop();
+      renderCard(currentCard);
+    }
+
+    function renderCard(card) {
+      document.getElementById('cardCategory').innerText = card.category || 'General';
+      document.getElementById('cardPrompt').innerText = card.prompt;
+      
+      const isFav = favoriteIds.includes(card.id);
+      document.getElementById('favCardBtn').classList.toggle('active', isFav);
+
+      const totalInFilter = masterDatabase.filter(c => {
+        const matchesModule = activeModule === 'all' || c.module === activeModule;
+        const matchesIntensity = activeModule !== 'sexuality' || activeIntensity === 'all' || c.intensity == activeIntensity;
+        return matchesModule && matchesIntensity;
+      }).length;
+
+      const currentCardNum = totalInFilter - unspentDeck.length;
+      document.getElementById('deckCounter').innerText = `Card ${currentCardNum} of ${totalInFilter}`;
+
+      renderResponseControls(card);
+    }
+
+    function renderResponseControls(card) {
+      const responseBar = document.getElementById('responseBar');
+      const pollGrid = document.getElementById('pollOptionsGrid');
+      responseBar.innerHTML = '';
+      pollGrid.innerHTML = '';
+      pollGrid.classList.add('hidden');
+
+      if (card.contextType === 'poll' && card.options) {
+        pollGrid.classList.remove('hidden');
+        card.options.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.className = 'poll-option-btn';
+          btn.innerText = opt;
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.poll-option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            logBoundaryChoice(card, `Selected: ${opt}`);
+          };
+          pollGrid.appendChild(btn);
+        });
+      } else {
+        const rules = CONTEXT_RULES[card.contextType] || CONTEXT_RULES.alignment;
+        rules.forEach(rule => {
+          const btn = document.createElement('button');
+          btn.className = `response-btn ${rule.class}`;
+          btn.innerText = rule.label;
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            logBoundaryChoice(card, rule.status);
+            drawNextCard();
+          };
+          responseBar.appendChild(btn);
+        });
+      }
+    }
+
+    function logBoundaryChoice(card, responseStatus) {
+      const logEntry = {
+        cardId: card.id,
+        prompt: card.prompt,
+        category: card.category,
+        response: responseStatus,
+        timestamp: new Date().toLocaleDateString()
+      };
+      boundaryLogs.unshift(logEntry);
+      localStorage.setItem('threshold_logs', JSON.stringify(boundaryLogs));
+    }
+
+    document.querySelectorAll('.module-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeModule = tab.dataset.module;
+
+        const intensityBar = document.getElementById('intensityBar');
+        const root = document.documentElement;
+        if (activeModule === 'sexuality') {
+          intensityBar.classList.remove('hidden');
+          root.style.setProperty('--current-accent', 'var(--accent-sexuality)');
+          root.style.setProperty('--current-glow', 'var(--accent-sexuality-glow)');
+        } else {
+          intensityBar.classList.add('hidden');
+          root.style.setProperty('--current-accent', 'var(--accent-life)');
+          root.style.setProperty('--current-glow', 'var(--accent-life-glow)');
+        }
+
+        rebuildUnspentDeck();
+        drawNextCard();
+      });
+    });
+
+    document.querySelectorAll('.intensity-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.intensity-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeIntensity = btn.dataset.level;
+        rebuildUnspentDeck();
+        drawNextCard();
+      });
+    });
+
+    document.getElementById('shuffleAllBtn').onclick = () => {
+      activeModule = 'all';
+      document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('intensityBar').classList.add('hidden');
+      rebuildUnspentDeck();
+      drawNextCard();
+    };
+
+    document.getElementById('cardContainer').onclick = () => {
+      drawNextCard();
+    };
+
+    document.getElementById('favCardBtn').onclick = (e) => {
+      e.stopPropagation();
+      if (!currentCard) return;
+      const index = favoriteIds.indexOf(currentCard.id);
+      if (index > -1) favoriteIds.splice(index, 1);
+      else favoriteIds.push(currentCard.id);
+      localStorage.setItem('threshold_favs', JSON.stringify(favoriteIds));
+      document.getElementById('favCardBtn').classList.toggle('active', favoriteIds.includes(currentCard.id));
+    };
+
+    const drawer = document.getElementById('toolsDrawer');
+    const overlay = document.getElementById('drawerOverlay');
+
+    function openDrawer(title, contentHtml) {
+      document.getElementById('drawerTitle').innerText = title;
+      document.getElementById('drawerContent').innerHTML = contentHtml;
+      drawer.classList.add('open');
+      overlay.classList.add('open');
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+
+    document.getElementById('closeDrawerBtn').onclick = closeDrawer;
+    overlay.onclick = closeDrawer;
+
+    document.getElementById('favsDrawerBtn').onclick = () => {
+      const favCards = masterDatabase.filter(c => favoriteIds.includes(c.id));
+      let html = favCards.length === 0 
+        ? '<p style="color: var(--text-muted);">No bookmarked cards yet.</p>'
+        : favCards.map(c => `<div class="fav-item"><div><strong>[${c.category}]</strong><p>${c.prompt}</p></div></div>`).join('');
+      openDrawer('Bookmarked Favorites', html);
+    };
+
+    document.getElementById('logsDrawerBtn').onclick = () => {
+      let html = boundaryLogs.length === 0 
+        ? '<p style="color: var(--text-muted);">No boundary actions logged yet.</p>'
+        : boundaryLogs.map(l => `<div class="log-item"><div><p>${l.prompt}</p><small style="color: var(--text-muted);">${l.timestamp}</small></div><span class="status-badge">${l.response}</span></div>`).join('');
+      openDrawer('Boundary History Log', html);
+    };
+
+    document.getElementById('toolsDrawerBtn').onclick = () => {
+      const html = `
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <button class="shuffle-all-btn" id="exportJsonBtn" style="padding:14px;">
+            <i data-lucide="download"></i> Download Full Database (JSON)
+          </button>
+          <p style="font-size:0.8rem; color:var(--text-muted);">
+            Active Cards in Engine: <strong>${masterDatabase.length}</strong>
+          </p>
+        </div>
+      `;
+      openDrawer('Tools & Database Manager', html);
+      document.getElementById('exportJsonBtn').onclick = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ cards: masterDatabase }, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "threshold_master_database.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+      };
+    };
+
+    window.onload = () => {
+      lucide.createIcons();
+      initDatabase();
+    };
+  </script>
+</body>
+</html>
