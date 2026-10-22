@@ -1,0 +1,94 @@
+{
+  "version": "1.0",
+  "cards": [
+    {
+      "id": "sec-101",
+      "module": "sexuality",
+      "category": "Past History & Sexual Firsts",
+      "intensity": 1,
+      "prompt": "What was a romantic or sensual moment from early in our relationship that made your heart race?",
+      "contextType": "story"
+    },
+    {
+      "id": "sec-102",
+      "module": "sexuality",
+      "category": "Past History & Sexual Firsts",
+      "intensity": 2,
+      "prompt": "What was an insecurity or barrier you had to work through in your journey with intimacy?",
+      "contextType": "story"
+    },
+    {
+      "id": "sec-103",
+      "module": "sexuality",
+      "category": "Future Openness & Touch Play",
+      "intensity": 2,
+      "prompt": "Is there a specific touch technique or massage style you would love to experience more often?",
+      "contextType": "consent"
+    },
+    {
+      "id": "sec-104",
+      "module": "sexuality",
+      "category": "Curiosities & Kinks/Fantasies",
+      "intensity": 3,
+      "prompt": "Have you ever wanted to try blindfolds, sensory deprivation, or light temperature play?",
+      "contextType": "consent"
+    },
+    {
+      "id": "sec-105",
+      "module": "sexuality",
+      "category": "Spicy Dares & Action Prompts",
+      "intensity": 2,
+      "prompt": "Whisper a genuine sensual secret or fantasy directly into your partner's ear right now.",
+      "contextType": "action"
+    },
+    {
+      "id": "sec-106",
+      "module": "sexuality",
+      "category": "Spicy Dares & Action Prompts",
+      "intensity": 3,
+      "prompt": "Give your partner a slow 60-second back or shoulder massage right now with undivided focus.",
+      "contextType": "action"
+    },
+    {
+      "id": "life-201",
+      "module": "life",
+      "category": "Life & Core Values",
+      "intensity": 1,
+      "prompt": "What is one core belief or personal value that you will never compromise on?",
+      "contextType": "alignment"
+    },
+    {
+      "id": "life-202",
+      "module": "life",
+      "category": "Finances & Money",
+      "intensity": 2,
+      "prompt": "What threshold dollar amount requires a quick consultation before either of us purchases something?",
+      "contextType": "alignment"
+    },
+    {
+      "id": "life-203",
+      "module": "life",
+      "category": "Pets & Animal Companions",
+      "intensity": 1,
+      "prompt": "What role do pets play in your ideal long-term household and routine?",
+      "contextType": "poll",
+      "options": ["Essential part of the family", "Nice to have occasionally", "Prefer no pets", "Undecided"]
+    },
+    {
+      "id": "life-204",
+      "module": "life",
+      "category": "Sports & Fitness",
+      "intensity": 1,
+      "prompt": "What is an athletic activity, sport, or workout routine you would love for us to try together?",
+      "contextType": "story"
+    },
+    {
+      "id": "life-205",
+      "module": "life",
+      "category": "Travel & Dream Home",
+      "intensity": 1,
+      "prompt": "If we could live anywhere in the world for one sabbatical year, where would you pick?",
+      "contextType": "story"
+    }
+  ]
+}
