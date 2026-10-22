@@ -487,14 +487,14 @@
   <main>
     <div class="card-container" id="cardContainer">
       <div class="card-header">
-        <span class="card-badge" id="cardCategory">Loading Deck...</span>
+        <span class="card-badge" id="cardCategory">Loading Database...</span>
         <div class="card-actions">
           <button class="card-action-btn" id="favCardBtn"><i data-lucide="bookmark"></i></button>
         </div>
       </div>
 
       <div class="card-body">
-        <p class="card-prompt" id="cardPrompt">Preparing questions...</p>
+        <p class="card-prompt" id="cardPrompt">Fetching questions from cards.json...</p>
         <div class="poll-options-grid hidden" id="pollOptionsGrid"></div>
       </div>
 
@@ -520,20 +520,7 @@
   </div>
 
   <script>
-    let masterDatabase = [
-      { id: 'sec-101', module: 'sexuality', category: 'Past History', intensity: 1, prompt: 'What was a romantic or sensual moment from early in our relationship that made your heart race?', contextType: 'story' },
-      { id: 'sec-102', module: 'sexuality', category: 'Past History', intensity: 2, prompt: 'What was a barrier or insecurity you had to overcome in your intimacy journey?', contextType: 'story' },
-      { id: 'sec-103', module: 'sexuality', category: 'Touch Play', intensity: 2, prompt: 'Is there a specific touch technique or massage style you would love to experience more often?', contextType: 'consent' },
-      { id: 'sec-104', module: 'sexuality', category: 'Fantasies', intensity: 3, prompt: 'Have you ever wanted to try blindfolds, sensory deprivation, or light restraints?', contextType: 'consent' },
-      { id: 'sec-105', module: 'sexuality', category: 'Spicy Dares', intensity: 2, prompt: 'Whisper a genuine fantasy or sensual secret directly into your partner\'s ear right now.', contextType: 'action' },
-      { id: 'sec-106', module: 'sexuality', category: 'Spicy Dares', intensity: 3, prompt: 'Give your partner a slow 60-second back massage right now.', contextType: 'action' },
-      { id: 'life-201', module: 'life', category: 'Life & Core Values', intensity: 1, prompt: 'What is one core belief or value that you will never compromise on?', contextType: 'alignment' },
-      { id: 'life-202', module: 'life', category: 'Finances & Money', intensity: 2, prompt: 'How should we handle major financial purchases or joint investments moving forward?', contextType: 'alignment' },
-      { id: 'life-203', module: 'life', category: 'Pets & Animals', intensity: 1, prompt: 'What role do pets play in your ideal household and daily routine?', contextType: 'poll', options: ['Crucial part of family', 'Nice to have occasionally', 'Prefer no pets', 'Undecided'] },
-      { id: 'life-204', module: 'life', category: 'Sports & Athletics', intensity: 1, prompt: 'What is an athletic activity or workout routine you would love for us to do together?', contextType: 'story' },
-      { id: 'life-205', module: 'life', category: 'Travel & Dream Home', intensity: 1, prompt: 'If we could move anywhere in the world for one year, where would we go?', contextType: 'story' }
-    ];
-
+    let masterDatabase = [];
     let unspentDeck = [];
     let currentCard = null;
     let activeModule = 'sexuality';
@@ -564,7 +551,27 @@
       ]
     };
 
-    function initDatabase() {
+    // Asynchronously fetch cards.json from GitHub server
+    async function initDatabase() {
+      try {
+        const response = await fetch('./cards.json');
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        const data = await response.json();
+        masterDatabase = data.cards || [];
+        localStorage.setItem('threshold_cached_db', JSON.stringify(masterDatabase));
+      } catch (err) {
+        console.warn('Network fetch for cards.json failed. Checking browser cache...', err);
+        const cached = localStorage.getItem('threshold_cached_db');
+        if (cached) {
+          masterDatabase = JSON.parse(cached);
+        } else {
+          // Safety Fallback Deck if file is not found
+          masterDatabase = [
+            { id: 'fb-1', module: 'sexuality', category: 'Past History', intensity: 1, prompt: 'What was a moment early in our relationship that made your heart race?', contextType: 'story' },
+            { id: 'fb-2', module: 'life', category: 'Finances', intensity: 1, prompt: 'What is a small everyday purchase that brings you genuine joy?', contextType: 'alignment' }
+          ];
+        }
+      }
       rebuildUnspentDeck();
       drawNextCard();
     }
@@ -756,7 +763,7 @@
             <i data-lucide="download"></i> Download Full Database (JSON)
           </button>
           <p style="font-size:0.8rem; color:var(--text-muted);">
-            Active Cards in Engine: <strong>${masterDatabase.length}</strong>
+            Active Cards in Database: <strong>${masterDatabase.length}</strong>
           </p>
         </div>
       `;
@@ -765,7 +772,7 @@
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ cards: masterDatabase }, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", "threshold_master_database.json");
+        downloadAnchor.setAttribute("download", "cards.json");
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
